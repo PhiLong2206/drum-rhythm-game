@@ -74,6 +74,7 @@
     <Compile Include="Assets\Scripts\ResultUI.cs" />
     <Compile Include="Assets\Scripts\LaneInputUI.cs" />
     <Compile Include="Assets\Scripts\JudgementUI.cs" />
+    <Compile Include="Assets\Scripts\RestartButton.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

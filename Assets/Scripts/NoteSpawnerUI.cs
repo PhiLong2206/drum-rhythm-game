@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class NoteSpawnerUI : MonoBehaviour
 {
@@ -9,8 +10,15 @@ public class NoteSpawnerUI : MonoBehaviour
 
     public ScoreManager scoreManager;
     public ResultUI resultUI;
-    bool resultShown = false;
 
+    public GameObject BG_VillageHappy;
+    public GameObject BG_VillageAngry;
+
+    public AudioSource sfxSource;   // SfxManager
+    public AudioClip happyClip;     // tiếng vỗ tay
+    public AudioClip angryClip;     // tiếng giận dữ
+
+    bool resultShown = false;
     int nextIndex = 0;
 
     [System.Serializable]
@@ -24,6 +32,10 @@ public class NoteSpawnerUI : MonoBehaviour
 
     void Start()
     {
+        // đảm bảo 2 BG tắt lúc bắt đầu
+        if (BG_VillageHappy != null) BG_VillageHappy.SetActive(false);
+        if (BG_VillageAngry != null) BG_VillageAngry.SetActive(false);
+
         testNotes = new NoteData[]
         {
             new NoteData{ beat =  1f, lane = Lane.Left    },
@@ -84,16 +96,45 @@ public class NoteSpawnerUI : MonoBehaviour
             }
         }
 
-        // Chỉ hiện kết quả khi: đã spawn xong VÀ đã đánh/miss hết 16 note
+        // Kết thúc bài: đã spawn xong VÀ không còn NoteUI nào (tất cả đã PERFECT/GOOD/MISS)
         if (!resultShown && nextIndex >= testNotes.Length)
         {
-            int total = scoreManager.TotalNotes;
-
-            if (total >= testNotes.Length)
+            if (FindObjectsOfType<NoteUI>().Length == 0)
             {
                 resultShown = true;
-                resultUI.ShowResult();
+
+                Debug.Log("END SONG, missCount = " + scoreManager.missCount);
+
+                if (scoreManager.missCount == 0)
+                {
+                    Debug.Log("SHOW HAPPY ENDING");
+
+                    if (BG_VillageHappy != null) BG_VillageHappy.SetActive(true);
+                    if (BG_VillageAngry != null) BG_VillageAngry.SetActive(false);
+
+                    if (sfxSource != null && happyClip != null)
+                        sfxSource.PlayOneShot(happyClip);
+                }
+                else
+                {
+                    Debug.Log("SHOW ANGRY ENDING");
+
+                    if (BG_VillageAngry != null) BG_VillageAngry.SetActive(true);
+                    if (BG_VillageHappy != null) BG_VillageHappy.SetActive(false);
+
+                    if (sfxSource != null && angryClip != null)
+                        sfxSource.PlayOneShot(angryClip);
+                }
+
+                // Đợi 2 giây rồi mới hiện bảng kết quả
+                StartCoroutine(ShowResultDelay());
             }
         }
+    }
+
+    IEnumerator ShowResultDelay()
+    {
+        yield return new WaitForSeconds(2f);  // chỉnh số giây tùy ý
+        resultUI.ShowResult();
     }
 }
